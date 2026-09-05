@@ -131,6 +131,68 @@ def check_openrouter_key(config: AppConfig) -> CheckResult:
     )
 
 
+def check_model_config(config: AppConfig) -> CheckResult:
+    model_name = config.model.requested_model
+    source = ".env (OPENROUTER_MODEL)" if os.environ.get("OPENROUTER_MODEL") else "default.toml"
+    return CheckResult(
+        name="Configured LLM Model",
+        status=True,
+        details=f"{model_name} (via {source})",
+    )
+
+
+def check_live_model_probe(config: AppConfig) -> CheckResult:
+    key = config.openrouter_api_key or os.environ.get("OPENROUTER_API_KEY")
+    if not key or not key.strip():
+        return CheckResult(
+            name="OpenRouter Live Probe",
+            status=False,
+            details="Skipped: No OPENROUTER_API_KEY found in .env or environment.",
+            is_warning=True,
+        )
+    try:
+        import httpx
+        headers = {
+            "Authorization": f"Bearer {key.strip()}",
+            "Content-Type": "application/json",
+            "HTTP-Referer": config.openrouter_http_referer or "",
+            "X-Title": config.openrouter_title or "",
+        }
+        payload = {
+            "model": config.model.requested_model,
+            "messages": [{"role": "user", "content": "ping"}],
+            "max_tokens": 5,
+        }
+        resp = httpx.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json=payload,
+            timeout=15.0,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            provider = data.get("provider", "OpenRouter")
+            return CheckResult(
+                name="OpenRouter Live Probe",
+                status=True,
+                details=f"Verified connection to {config.model.requested_model} [{provider}]",
+            )
+        else:
+            return CheckResult(
+                name="OpenRouter Live Probe",
+                status=False,
+                details=f"HTTP {resp.status_code}: {resp.text[:120]}",
+                is_warning=False,
+            )
+    except Exception as e:
+        return CheckResult(
+            name="OpenRouter Live Probe",
+            status=False,
+            details=f"Failed to probe {config.model.requested_model}: {e}",
+            is_warning=False,
+        )
+
+
 def check_output_dir(config: AppConfig) -> CheckResult:
     out_dir = Path(config.report.output_directory)
     try:
@@ -170,8 +232,13 @@ def run_doctor(config: AppConfig | None = None, check_model: bool = False) -> bo
         check_chromium(),
         check_axe_core(),
         check_openrouter_key(config),
+        check_model_config(config),
         check_output_dir(config),
     ]
+
+    if check_model:
+        with console.status(f"[bold cyan]Probing OpenRouter model {config.model.requested_model}...[/bold cyan]"):
+            checks.append(check_live_model_probe(config))
 
     table = Table(title="System Readiness Checks", show_header=True, header_style="bold magenta")
     table.add_column("Component", style="dim", width=26)
@@ -199,3 +266,4 @@ def run_doctor(config: AppConfig | None = None, check_model: bool = False) -> bo
         console.print("[bold red]✖ Some critical system checks failed. Review issues above.[/bold red]")
 
     return all_passed
+

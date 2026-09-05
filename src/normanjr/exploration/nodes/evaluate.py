@@ -73,6 +73,56 @@ async def evaluate_node(state: AuditState, context: AuditContext) -> dict[str, A
         )
         findings.append(f)
 
+    # 3. Model heuristic evaluation if LLM client is available and not in low-call budget lock
+    obs = state.get("current_observation")
+    if context.llm_client and obs:
+        try:
+            eval_resp = await context.llm_client.evaluate_heuristics(
+                observation=obs,
+                rubric_criteria=context.rubric.criteria,
+            )
+            sev_map = {
+                "minor": FindingSeverity.MINOR,
+                "moderate": FindingSeverity.MODERATE,
+                "major": FindingSeverity.MAJOR,
+                "critical": FindingSeverity.CRITICAL,
+            }
+            pen_map = {
+                FindingSeverity.MINOR: 2,
+                FindingSeverity.MODERATE: 5,
+                FindingSeverity.MAJOR: 8,
+                FindingSeverity.CRITICAL: 15,
+            }
+            for i, hf in enumerate(eval_resp.findings):
+                sev = sev_map.get(hf.severity.lower(), FindingSeverity.MINOR)
+                f = Finding(
+                    finding_id=f"eval-heuristic-{step_no:03d}-{i+1:02d}",
+                    root_cause_key=f"heuristic:{hf.criterion_id}:{hf.title[:30]}",
+                    source=FindingSource.MODEL_REASONING,
+                    criterion_id=hf.criterion_id,
+                    category_id="cognitive_clarity",
+                    severity=sev,
+                    status=FindingStatus.CONFIRMED,
+                    confidence="medium",
+                    score_penalty=pen_map[sev],
+                    scoring_eligible=True,
+                    journey_id=journey_id,
+                    title=hf.title,
+                    description=hf.description,
+                    user_impact=hf.user_impact,
+                    expected_behavior="User interface follows UX usability and clarity principles.",
+                    actual_behavior=hf.description,
+                    recommendation=hf.recommendation,
+                    verification_advice="Verify usability against Nielsen and Norman UX principles.",
+                )
+                findings.append(f)
+        except Exception as e:
+            context.repo.log_event("LLM_EVALUATION_ERROR", {
+                "error": str(e),
+                "model": context.llm_client.settings.requested_model,
+            })
+
     return {
         "all_findings": findings,
     }
+

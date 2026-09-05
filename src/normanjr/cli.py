@@ -68,38 +68,59 @@ def doctor(
 
 @app.command()
 def models(
+    search: str | None = typer.Option(None, "--search", "-s", help="Filter models by name (e.g. gemini, claude, llama)."),
     free: bool = typer.Option(False, "--free", help="Filter for free models only."),
     vision: bool = typer.Option(False, "--vision", help="Filter for multimodal/vision models."),
+    config_path: str | None = typer.Option(None, "--config", "-c", help="Path to TOML configuration"),
 ) -> None:
-    """List available OpenRouter models and capabilities."""
+    """List available OpenRouter models, capabilities, and active configuration."""
+    cfg = load_config(toml_path=config_path)
+    active_model = cfg.model.requested_model
+    source_str = ".env (OPENROUTER_MODEL)" if os.environ.get("OPENROUTER_MODEL") else "config/default.toml"
+
+    console.print(Panel.fit(
+        f"Active Model: [bold green]{active_model}[/bold green]\n"
+        f"Source: [dim]{source_str}[/dim]\n"
+        f"To change: Set [cyan]OPENROUTER_MODEL=\"<model_id>\"[/cyan] in [cyan].env[/cyan] or use [cyan]normanjr audit --model <model_id>[/cyan]",
+        title="OpenRouter Model Configuration",
+        border_style="cyan",
+    ))
+
     async def _fetch():
         catalog = ModelCatalog()
         return await catalog.get_model_capabilities()
 
-    with console.status("Fetching model catalog..."):
+    with console.status("Fetching model catalog from OpenRouter..."):
         model_list = asyncio.run(_fetch())
 
     if not model_list:
         console.print("[yellow]No models found in cache or network failed.[/yellow]")
         return
 
-    table = Table(title="OpenRouter Model Capabilities", show_header=True)
+    table = Table(title="OpenRouter Model Catalog", show_header=True)
     table.add_column("Model ID", style="cyan")
     table.add_column("Context", justify="right")
     table.add_column("Vision")
-    table.add_column("Free")
+    table.add_column("Pricing (Prompt)")
+    table.add_column("Status")
 
     for m in model_list:
         if free and not m.is_free:
             continue
         if vision and not m.supports_vision:
             continue
+        if search and search.lower() not in m.model_id.lower():
+            continue
+
+        is_active = m.model_id == active_model
+        status_tag = "[bold green]★ ACTIVE[/bold green]" if is_active else ""
 
         table.add_row(
             m.model_id,
             f"{m.context_length // 1000}k",
             "[green]YES[/green]" if m.supports_vision else "[dim]NO[/dim]",
             "[bold green]FREE[/bold green]" if m.is_free else f"${m.pricing_prompt*1e6:.2f}/M",
+            status_tag,
         )
 
     console.print(table)
@@ -116,14 +137,6 @@ async def _run_audit_pipeline(
     repo = RunRepository(output_dir, run_id)
     repo.save_config_snapshot(config)
 
-    console.print(Panel.fit(
-        f"[bold cyan]NormanJr. Audit Session[/bold cyan]\n"
-        f"Target: [bold]{url}[/bold]\n"
-        f"Run ID: [dim]{run_id}[/dim]\n"
-        f"Directory: [dim]{repo.run_dir}[/dim]",
-        border_style="cyan",
-    ))
-
     # Initialize policies
     url_policy = UrlPolicy(config.exploration, config.safety, initial_origin=url)
     try:
@@ -139,7 +152,23 @@ async def _run_audit_pipeline(
     llm_client: OpenRouterClient | None = None
     api_key = config.openrouter_api_key or os.environ.get("OPENROUTER_API_KEY")
     if api_key:
-        llm_client = OpenRouterClient(api_key, settings=config.model)
+        llm_client = OpenRouterClient(
+            api_key,
+            settings=config.model,
+            http_referer=config.openrouter_http_referer,
+            title=config.openrouter_title,
+        )
+
+    engine_status = f"[bold green]{config.model.requested_model}[/bold green] (OpenRouter AI Reasoning)" if llm_client else "[yellow]Deterministic / Heuristic Mode (No API key)[/yellow]"
+
+    console.print(Panel.fit(
+        f"[bold cyan]NormanJr. Audit Session[/bold cyan]\n"
+        f"Target URL: [bold]{url}[/bold]\n"
+        f"LLM Engine: {engine_status}\n"
+        f"Run ID: [dim]{run_id}[/dim]\n"
+        f"Artifacts: [dim]{repo.run_dir}[/dim]",
+        border_style="cyan",
+    ))
 
     # Initialize browser settings
     browser_settings = config.browser.model_copy()
@@ -171,8 +200,24 @@ async def _run_audit_pipeline(
         if goals:
             for i, g in enumerate(goals):
                 journey_list.append(Journey(journey_id=f"j{i+1}", goal=g))
-        else:
+
+        elif llm_client:
+            try:
+                with console.status(f"[bold cyan]Formulating exploratory journeys using {config.model.requested_model}...[/bold cyan]"):
+                    snap = await adapter.take_snapshot()
+                    resp = await llm_client.generate_journeys(url, snap)
+                    for i, pj in enumerate(resp.journeys[:config.exploration.max_journeys]):
+                        journey_list.append(Journey(
+                            journey_id=f"j{i+1}",
+                            goal=pj.goal,
+                            target_persona=pj.target_persona,
+                        ))
+            except Exception as e:
+                console.print(f"[dim yellow]Model journey planning fallback: {e}[/dim yellow]")
+
+        if not journey_list:
             journey_list.append(Journey(journey_id="j1", goal="Explore core navigation and interactive controls"))
+
 
         initial_state = {
             "run_id": run_id,

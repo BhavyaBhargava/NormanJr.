@@ -38,3 +38,16 @@ def test_redacted_dict():
     config = AppConfig(OPENROUTER_API_KEY="sk-secret12345678901234567890")
     redacted = config.redacted_dict()
     assert redacted["OPENROUTER_API_KEY"] == "REDACTED"
+
+
+def test_config_env_model_override(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
+    config = load_config(load_env=False)
+    assert config.model.requested_model == "anthropic/claude-3.5-sonnet"
+
+
+def test_config_cli_overrides_env_model(monkeypatch):
+    monkeypatch.setenv("OPENROUTER_MODEL", "anthropic/claude-3.5-sonnet")
+    config = load_config(overrides={"model.requested_model": "custom-override-model"}, load_env=False)
+    assert config.model.requested_model == "custom-override-model"
+

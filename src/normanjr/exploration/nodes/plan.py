@@ -45,6 +45,49 @@ async def plan_node(state: AuditState, context: AuditContext) -> dict[str, Any]:
             )
         }
 
+    # 2. Try Model-driven action proposal if LLM client is available
+    if context.llm_client:
+        try:
+            proposal = await context.llm_client.propose_action(
+                goal=goal,
+                observation=obs,
+                candidate_elements=actionable,
+            )
+            matching_elem = None
+            if proposal.target_ref:
+                matching_elem = next((e for e in actionable if e.ref == proposal.target_ref), None)
+
+            action_type_val = proposal.action_type.lower()
+            try:
+                action_type = ActionType(action_type_val)
+            except ValueError:
+                action_type = ActionType.CLICK
+
+            if action_type == ActionType.FINISH or matching_elem:
+                action = ProposedAction(
+                    action_type=action_type,
+                    target_ref=proposal.target_ref if matching_elem else None,
+                    value=proposal.value,
+                    rationale=f"[{context.llm_client.settings.requested_model}] {proposal.rationale}",
+                    expected_change=proposal.expected_change,
+                    risk_class=RiskClass.LOW,
+                    source_observation_id=obs.observation_id,
+                )
+                context.repo.log_event("ACTION_PROPOSED", {
+                    "action": action.action_type.value,
+                    "target_ref": action.target_ref,
+                    "target_name": matching_elem.name if matching_elem else None,
+                    "rationale": action.rationale,
+                    "model": context.llm_client.settings.requested_model,
+                })
+                return {"current_action": action}
+        except Exception as e:
+            context.repo.log_event("LLM_PLANNER_FALLBACK", {
+                "error": str(e),
+                "model": context.llm_client.settings.requested_model,
+            })
+
+    # 3. Deterministic candidate ranking fallback:
     # Match goal tokens against element names
     goal_tokens = [t.lower() for t in goal.split() if len(t) > 2]
     best_elem = None
@@ -64,6 +107,7 @@ async def plan_node(state: AuditState, context: AuditContext) -> dict[str, Any]:
             best_elem = elem
 
     chosen = best_elem or actionable[0]
+
 
     # Decide action type
     if chosen.role in ("textbox", "searchbox"):

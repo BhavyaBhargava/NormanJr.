@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import tomllib
+import dotenv
 from pathlib import Path
 from typing import Any
 
@@ -80,12 +81,15 @@ class AppConfig(BaseSettings):
     """Main application configuration containing all subsystem settings."""
 
     model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
         env_prefix="",
         env_nested_delimiter="__",
         extra="ignore",
     )
 
     openrouter_api_key: str | None = Field(default=None, alias="OPENROUTER_API_KEY")
+    openrouter_model: str | None = Field(default=None, alias="OPENROUTER_MODEL")
     openrouter_http_referer: str | None = Field(
         default="https://github.com/normanjr/normanjr", alias="OPENROUTER_HTTP_REFERER"
     )
@@ -103,6 +107,8 @@ class AppConfig(BaseSettings):
 
     @model_validator(mode="after")
     def validate_incompatible_options(self) -> AppConfig:
+        if self.openrouter_model and not self.model.requested_model:
+            self.model.requested_model = self.openrouter_model
         if self.browser.storage_state_path and not self.safety.allow_authentication:
             raise ValueError(
                 "storage_state_path is specified, but safety.allow_authentication is False."
@@ -128,8 +134,17 @@ class AppConfig(BaseSettings):
 def load_config(
     toml_path: str | Path | None = None,
     overrides: dict[str, Any] | None = None,
+    load_env: bool = True,
+    env_path: str | Path | None = None,
 ) -> AppConfig:
-    """Load configuration from TOML file, environment variables, and explicit overrides."""
+    """Load configuration from TOML file, environment variables (.env), and explicit overrides."""
+    if load_env:
+        target_env = Path(env_path) if env_path else Path(".env")
+        if target_env.exists():
+            dotenv.load_dotenv(dotenv_path=target_env, override=False)
+        else:
+            dotenv.load_dotenv(override=False)
+
     toml_data: dict[str, Any] = {}
 
     default_toml = Path("config/default.toml")
@@ -144,6 +159,20 @@ def load_config(
         with open(default_toml, "rb") as f:
             toml_data = tomllib.load(f)
 
+    # Allow environment variables (from .env or shell) to override default TOML
+    env_model = (
+        os.environ.get("OPENROUTER_MODEL")
+        or os.environ.get("NORMANJR_MODEL")
+        or os.environ.get("MODEL")
+    )
+    if env_model:
+        toml_data.setdefault("model", {})["requested_model"] = env_model
+
+    env_api_key = os.environ.get("OPENROUTER_API_KEY")
+    if env_api_key:
+        toml_data["openrouter_api_key"] = env_api_key
+
+    # Explicit programmatic / CLI overrides take highest precedence
     if overrides:
         for key, value in overrides.items():
             if value is not None:
@@ -154,3 +183,4 @@ def load_config(
                 curr[parts[-1]] = value
 
     return AppConfig(**toml_data)
+
