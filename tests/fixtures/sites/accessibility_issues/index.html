@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flawed Accessibility Site</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; color: #888888; background: #999999; /* Low contrast */ }
+    .tiny-icon-btn { width: 14px; height: 14px; border: 1px solid red; padding: 0; background: transparent; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Accessibility Flaws Demo</h1>
+  <!-- Heading skip from H1 directly to H4 -->
+  <h4>Skipped Heading Level 4</h4>
+
+  <!-- Button below 24x24px minimum -->
+  <p>Small icon action: <button class="tiny-icon-btn" id="tiny-close-btn">x</button></p>
+
+  <!-- Input without label -->
+  <p>Input without label: <input type="text" id="orphan-field" placeholder="No associated label" /></p>
+
+  <!-- Image missing alt -->
+  <p>Missing alt image: <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50'%3E%3Crect width='50' height='50' fill='%23ff0000'/%3E%3C/svg%3E" id="flawed-img" width="50" height="50" /></p>
+</body>
+</html>

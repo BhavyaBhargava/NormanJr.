@@ -1,0 +1,9 @@
+{
+  "browser": "chromium",
+  "headless": true,
+  "isolated": true,
+  "actionTimeout": 10000,
+  "navigationTimeout": 30000,
+  "snapshotBoxes": true,
+  "codegen": "none"
+}

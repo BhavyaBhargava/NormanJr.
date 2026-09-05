@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NormanJr. UX Audit — {{ run.target_url }}</title>
+  <style>
+    {{ css_content | safe }}
+  </style>
+</head>
+<body>
+
+  <!-- Report Header -->
+  <header class="report-header">
+    <div class="report-title">
+      <h1>NormanJr. UX Audit Report</h1>
+      <p>Target: <strong>{{ run.target_url }}</strong></p>
+    </div>
+    <div class="report-meta">
+      <span><strong>Run ID:</strong> {{ run.run_id }}</span>
+      <span><strong>Date:</strong> {{ run.completed_at or run.created_at }}</span>
+      <span><strong>NormanJr. Engine:</strong> v{{ version }}</span>
+    </div>
+  </header>
+
+  <!-- Hero Scorecard -->
+  <section class="hero-grid">
+    <!-- Overall Score -->
+    <div class="score-card">
+      {% set score_val = run.score.overall_score if run.score else 0.0 %}
+      {% if score_val >= 85 %}
+        <div class="score-circle score-high">
+      {% elif score_val >= 70 %}
+        <div class="score-circle score-medium">
+      {% else %}
+        <div class="score-circle score-low">
+      {% endif %}
+        <span class="score-number">{{ score_val }}</span>
+        <span class="score-label">UX Index</span>
+      </div>
+      <span class="confidence-badge">Confidence: {{ run.score.confidence if run.score else 'medium' }}</span>
+    </div>
+
+    <!-- Category Breakdown -->
+    <div class="categories-card">
+      <h2>Category Evaluation Scorecard</h2>
+      {% if run.score and run.score.category_scores %}
+        {% for cat in run.score.category_scores %}
+        <div class="category-row">
+          <span class="category-name" title="{{ cat.category_name }}">{{ cat.category_name }}</span>
+          <div class="category-bar-wrapper">
+            <div class="category-bar-fill" style="width: {{ cat.raw_score }}%;"></div>
+          </div>
+          <span class="category-val">{{ cat.raw_score }}</span>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-muted);">No category scores recorded.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Journeys Overview -->
+  <section>
+    <div class="section-header">
+      <h2>Audited User Journeys</h2>
+      <span>{{ run.journeys | length }} Journey(s)</span>
+    </div>
+    {% for j in run.journeys %}
+    <div class="journey-card">
+      <div class="journey-header">
+        <span class="journey-goal">{{ j.goal }}</span>
+        <span class="badge badge-observation">{{ j.status.value }}</span>
+      </div>
+      <p style="color: var(--text-secondary); font-size: 0.85rem;">
+        {% if j.termination_reason %}
+          Termination Reason: <strong>{{ j.termination_reason.value }}</strong>
+        {% else %}
+          Completed within configured parameters.
+        {% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- Prioritized Findings -->
+  <section>
+    <div class="section-header">
+      <h2>Prioritized Usability & Accessibility Findings</h2>
+      <span>{{ run.findings | length }} Finding(s)</span>
+    </div>
+
+    {% if run.findings %}
+    <div class="findings-list">
+      {% for f in run.findings %}
+      <div class="finding-card severity-{{ f.severity.value }}">
+        <div class="finding-top">
+          <div class="finding-title">{{ f.title }}</div>
+          <div class="badges">
+            <span class="badge badge-{{ f.severity.value }}">{{ f.severity.value }}</span>
+            <span class="badge badge-observation">{{ f.source.value }}</span>
+            {% if f.occurrences > 1 %}
+            <span class="badge badge-minor">{{ f.occurrences }}x occurrences</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <p class="finding-desc">{{ f.description }}</p>
+
+        {% if f.user_impact %}
+        <div class="finding-impact">
+          <strong>User Impact:</strong> {{ f.user_impact }}
+        </div>
+        {% endif %}
+
+        {% if f.recommendation %}
+        <div class="finding-recommendation">
+          <strong>Recommendation:</strong> {{ f.recommendation }}
+        </div>
+        {% endif %}
+
+        <div class="finding-meta">
+          <span><strong>Criterion:</strong> {{ f.criterion_id }}</span>
+          {% if f.target_selector %}
+          <span><strong>Target:</strong> {{ f.target_selector }}</span>
+          {% endif %}
+          <span><strong>Deduplication Key:</strong> {{ f.root_cause_key }}</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: var(--text-secondary);">No usability or accessibility violations found during this audit.</p>
+    {% endif %}
+  </section>
+
+  <!-- Methodology & Limitations -->
+  <footer class="report-footer">
+    <p>
+      <strong>Audit Methodology & Limitations:</strong>
+      NormanJr. is an automated evidence-gathering and heuristic evaluation assistant.
+      Automated scans cannot guarantee full legal WCAG compliance or substitute for moderated user testing with people with disabilities.
+      Evaluations are grounded in Don Norman's principles, Nielsen usability heuristics, and automated WCAG 2.2 checks.
+    </p>
+  </footer>
+
+</body>
+</html>

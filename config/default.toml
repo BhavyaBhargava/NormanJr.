@@ -1,0 +1,57 @@
+# Default configuration for NormanJr.
+
+[model]
+requested_model = "google/gemini-2.5-flash"
+allow_free_router = true
+require_vision = false
+require_structured_output = true
+request_timeout_seconds = 60.0
+max_retries = 2
+max_calls = 40
+max_input_tokens = 64000
+max_output_tokens = 4096
+max_cost_usd = 2.0
+
+[browser]
+browser_name = "chromium"
+headless = true
+isolated = true
+action_timeout_ms = 10000
+navigation_timeout_ms = 30000
+settle_timeout_ms = 1500
+output_max_bytes = 52428800
+
+[exploration]
+max_journeys = 3
+max_steps_per_journey = 20
+max_unique_states = 60
+max_pages = 25
+max_duration_seconds = 1800
+max_repeated_state_visits = 3
+same_origin_only = true
+allowed_origins = []
+denied_url_patterns = []
+
+[safety]
+allow_final_submit = false
+allow_download = false
+allow_upload = false
+allow_external_navigation = false
+allow_authentication = false
+allow_destructive_actions = false
+stop_on_captcha = true
+redact_form_values = true
+allow_private_target = false
+
+[report]
+output_directory = "runs"
+include_full_snapshots = false
+include_console_errors = true
+include_network_urls = true
+screenshot_quality = 85
+retain_days = 30
+
+[scoring]
+rubric_path = "config/rubrics/ux-rubric-v1.yaml"
+rubric_version = "1.0.0"
+score_probable_findings = false

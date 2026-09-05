@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Step Checkout Flow</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; max-width: 600px; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .btn { padding: 10px 20px; margin-top: 1rem; cursor: pointer; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.25rem; font-weight: bold; }
+    input { width: 100%; padding: 8px; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <h1>Checkout Process</h1>
+  <div id="progress" style="margin-bottom: 1.5rem; font-weight: bold;">Step 1 of 3: Account</div>
+
+  <!-- Step 1 -->
+  <div id="step-1" class="step active">
+    <h2>Step 1: Your Details</h2>
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Alex Smith" />
+    </div>
+    <button id="next-btn-1" class="btn" onclick="goToStep(2)">Proceed to Step 2</button>
+  </div>
+
+  <!-- Step 2 -->
+  <div id="step-2" class="step">
+    <h2>Step 2: Shipping Details</h2>
+    <div class="form-group">
+      <label for="address">Delivery Address</label>
+      <input type="text" id="address" placeholder="123 Example Street" />
+    </div>
+    <button id="back-btn-1" class="btn" onclick="goToStep(1)">Back</button>
+    <button id="next-btn-2" class="btn" onclick="goToStep(3)">Proceed to Step 3</button>
+  </div>
+
+  <!-- Step 3 -->
+  <div id="step-3" class="step">
+    <h2>Step 3: Final Review</h2>
+    <p>Please review your information before final submission.</p>
+    <button id="back-btn-2" class="btn" onclick="goToStep(2)">Back</button>
+    <!-- Final Submit Button -->
+    <button id="submit-order-btn" class="btn" style="background: green; color: white;" onclick="alert('Order Placed!')">Submit Application</button>
+  </div>
+
+  <script>
+    function goToStep(num) {
+      document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+      document.getElementById('step-' + num).classList.add('active');
+      document.getElementById('progress').innerText = 'Step ' + num + ' of 3';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "normanjr",
+  "version": "0.1.0",
+  "description": "Autonomous, evidence-based UX auditing for web applications",
+  "private": true,
+  "scripts": {
+    "playwright:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.64",
+    "axe-core": "^4.10.2"
+  }
+}

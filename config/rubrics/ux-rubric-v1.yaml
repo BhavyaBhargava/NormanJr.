@@ -1,0 +1,201 @@
+schema_version: "1.0"
+rubric_id: "normanjr-ux"
+rubric_version: "1.0.0"
+
+categories:
+  - id: task_completion
+    label: "Task completion and flow"
+    weight: 0.25
+  - id: accessibility_operability
+    label: "Accessibility and operability"
+    weight: 0.20
+  - id: feedback_status
+    label: "Feedback and system status"
+    weight: 0.15
+  - id: constraints_error_recovery
+    label: "Constraints, error prevention, and recovery"
+    weight: 0.15
+  - id: discoverability_affordance
+    label: "Discoverability, affordance, and signifiers"
+    weight: 0.10
+  - id: mapping_conceptual_model
+    label: "Mapping and conceptual model"
+    weight: 0.05
+  - id: cognitive_load
+    label: "Cognitive load and information architecture"
+    weight: 0.05
+  - id: responsive_motor
+    label: "Responsive and motor ergonomics"
+    weight: 0.03
+  - id: performance_stability
+    label: "Perceived performance and stability"
+    weight: 0.02
+
+severity_penalties:
+  critical: 15
+  major: 8
+  minor: 3
+  observation: 0
+
+criteria:
+  - id: WCAG-2.5.8-TARGET-SIZE
+    category_id: accessibility_operability
+    title: "Target size (minimum)"
+    authority: "WCAG 2.2 SC 2.5.8"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-1.4.3-CONTRAST
+    category_id: accessibility_operability
+    title: "Contrast (minimum)"
+    authority: "WCAG 2.2 SC 1.4.3"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-4.1.2-NAME-ROLE-VALUE
+    category_id: accessibility_operability
+    title: "Name, role, value"
+    authority: "WCAG 2.2 SC 4.1.2"
+    default_severity: critical
+    allowed_severities: [major, critical]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-2.1.1-KEYBOARD
+    category_id: accessibility_operability
+    title: "Keyboard accessible"
+    authority: "WCAG 2.2 SC 2.1.1"
+    default_severity: critical
+    allowed_severities: [major, critical]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-2.1.2-NO-KEYBOARD-TRAP
+    category_id: accessibility_operability
+    title: "No keyboard trap"
+    authority: "WCAG 2.2 SC 2.1.2"
+    default_severity: critical
+    allowed_severities: [critical]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-2.4.7-FOCUS-VISIBLE
+    category_id: accessibility_operability
+    title: "Focus visible"
+    authority: "WCAG 2.2 SC 2.4.7"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-3.3.1-ERROR-IDENTIFICATION
+    category_id: constraints_error_recovery
+    title: "Error identification"
+    authority: "WCAG 2.2 SC 3.3.1"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: WCAG-3.3.2-LABELS-INSTRUCTIONS
+    category_id: constraints_error_recovery
+    title: "Labels or instructions"
+    authority: "WCAG 2.2 SC 3.3.2"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: NORMAN-AFFORDANCE-SIGNIFIER
+    category_id: discoverability_affordance
+    title: "Perceivable affordances and signifiers"
+    authority: "Don Norman (Design of Everyday Things)"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: NORMAN-FEEDBACK-IMMEDIATE
+    category_id: feedback_status
+    title: "Immediate and clear system feedback"
+    authority: "Don Norman (Design of Everyday Things)"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: NORMAN-CONCEPTUAL-MODEL
+    category_id: mapping_conceptual_model
+    title: "Clear conceptual model and natural mapping"
+    authority: "Don Norman (Design of Everyday Things)"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: journey
+    scoring_eligible: true
+
+  - id: NIELSEN-VISIBILITY-STATUS
+    category_id: feedback_status
+    title: "Visibility of system status"
+    authority: "Nielsen Norman Group (Heuristic #1)"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: NIELSEN-USER-CONTROL-FREEDOM
+    category_id: task_completion
+    title: "User control and freedom"
+    authority: "Nielsen Norman Group (Heuristic #3)"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: journey
+    scoring_eligible: true
+
+  - id: NIELSEN-CONSISTENCY-STANDARDS
+    category_id: mapping_conceptual_model
+    title: "Consistency and standards"
+    authority: "Nielsen Norman Group (Heuristic #4)"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: site-wide
+    scoring_eligible: true
+
+  - id: NIELSEN-ERROR-PREVENTION
+    category_id: constraints_error_recovery
+    title: "Error prevention"
+    authority: "Nielsen Norman Group (Heuristic #5)"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: FITTS-LAW-TARGET-DISTANCE
+    category_id: responsive_motor
+    title: "Target distance and sizing ergonomics"
+    authority: "Fitts's Law"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: component
+    scoring_eligible: true
+
+  - id: HICK-LAW-CHOICE-OVERLOAD
+    category_id: cognitive_load
+    title: "Cognitive load and choice complexity"
+    authority: "Hick's Law"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: PERF-STABILITY-LAYOUT-SHIFT
+    category_id: performance_stability
+    title: "Visual stability and no disruptive layout shifts"
+    authority: "Web Performance & UX Best Practices"
+    default_severity: minor
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true

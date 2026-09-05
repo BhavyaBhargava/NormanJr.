@@ -1,0 +1,61 @@
+"""Domain package for NormanJr."""
+
+from normanjr.domain.enums import (
+    ActionType,
+    AuditStatus,
+    FindingSeverity,
+    FindingSource,
+    FindingStatus,
+    JourneyStatus,
+    RiskClass,
+    TerminationReason,
+)
+from normanjr.domain.models import (
+    AuditCoverage,
+    AuditRun,
+    AuditScore,
+    BoundingBox,
+    CategoryScore,
+    ElementDescriptor,
+    ExecutionRecord,
+    Finding,
+    Journey,
+    PageObservation,
+    PolicyDecision,
+    ProposedAction,
+    StepRecord,
+)
+from normanjr.domain.serialization import (
+    compute_action_hash,
+    compute_state_fingerprint,
+    normalize_url,
+    to_canonical_json,
+)
+
+__all__ = [
+    "ActionType",
+    "AuditCoverage",
+    "AuditRun",
+    "AuditScore",
+    "AuditStatus",
+    "BoundingBox",
+    "CategoryScore",
+    "ElementDescriptor",
+    "ExecutionRecord",
+    "Finding",
+    "FindingSeverity",
+    "FindingSource",
+    "FindingStatus",
+    "Journey",
+    "JourneyStatus",
+    "PageObservation",
+    "PolicyDecision",
+    "ProposedAction",
+    "RiskClass",
+    "StepRecord",
+    "TerminationReason",
+    "compute_action_hash",
+    "compute_state_fingerprint",
+    "normalize_url",
+    "to_canonical_json",
+]
