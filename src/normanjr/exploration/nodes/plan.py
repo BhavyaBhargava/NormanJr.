@@ -8,6 +8,7 @@ from normanjr.domain.enums import ActionType, RiskClass
 from normanjr.domain.models import ProposedAction
 from normanjr.exploration.context import AuditContext
 from normanjr.exploration.state import AuditState
+from normanjr.exploration.synthetic_data import match_synthetic_value
 
 
 async def plan_node(state: AuditState, context: AuditContext) -> dict[str, Any]:
@@ -111,11 +112,12 @@ async def plan_node(state: AuditState, context: AuditContext) -> dict[str, Any]:
 
     # Decide action type
     if chosen.role in ("textbox", "searchbox"):
+        synthetic_val = match_synthetic_value(chosen.name)
         action = ProposedAction(
             action_type=ActionType.TYPE,
             target_ref=chosen.ref,
-            value="Jane Doe",
-            rationale=f"Enter synthetic data into input '{chosen.name}'",
+            value=synthetic_val,
+            rationale=f"Enter realistic synthetic data into input '{chosen.name}'",
             expected_change="Input value populated",
             risk_class=RiskClass.LOW,
             source_observation_id=obs.observation_id,
