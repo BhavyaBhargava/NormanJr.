@@ -36,6 +36,34 @@ class BrowserSettings(BaseModel):
     settle_timeout_ms: int = 1500
     output_max_bytes: int = 52428800
     storage_state_path: str | None = None
+    save_storage_state_path: str | None = None
+    profile: str = "desktop"
+    has_touch: bool = False
+    is_mobile: bool = False
+    device_scale_factor: float = 1.0
+    user_agent: str | None = None
+    stealth: bool = False
+
+    def apply_profile(self, profile: str) -> None:
+        """Apply mobile or desktop viewport and user agent presets."""
+        self.profile = profile.lower()
+        if self.profile in ("mobile", "mobile-safari", "iphone"):
+            self.viewport_width = 390
+            self.viewport_height = 844
+            self.has_touch = True
+            self.is_mobile = True
+            self.device_scale_factor = 3.0
+            self.user_agent = (
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) "
+                "WebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1"
+            )
+        elif self.profile == "desktop":
+            self.viewport_width = 1280
+            self.viewport_height = 800
+            self.has_touch = False
+            self.is_mobile = False
+            self.device_scale_factor = 1.0
+            self.user_agent = None
 
 
 class ExplorationSettings(BaseModel):

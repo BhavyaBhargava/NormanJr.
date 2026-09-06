@@ -100,11 +100,13 @@ class PlaywrightAdapter:
         return await self._call_tool("browser_navigate_back", {})
 
     async def wait_for(self, text: str | None = None, time_ms: int = 500) -> NormalizedContent:
-        """Wait for dynamic content to settle or specific text to appear."""
-        args: dict[str, Any] = {"time": time_ms}
+        """Wait for dynamic content to settle or specific text to appear (Playwright MCP expects seconds)."""
+        time_seconds = max(round(time_ms / 1000.0, 2), 0.1)
+        args: dict[str, Any] = {"time": time_seconds}
         if text:
             args["text"] = text
         return await self._call_tool("browser_wait_for", args)
+
 
     async def evaluate_script(self, expression: str) -> Any:
         """Execute a read-only metric script in the page context and return parsed result or raw text."""

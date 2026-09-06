@@ -61,6 +61,21 @@ class PlaywrightMcpClient:
             "--viewport-size", f"{self.settings.viewport_width}x{self.settings.viewport_height}",
         ])
 
+        if self.settings.browser_name and self.settings.browser_name in ("firefox", "webkit", "chromium"):
+            args.extend(["--browser", self.settings.browser_name])
+
+        if self.settings.user_agent:
+            args.extend(["--user-agent", self.settings.user_agent])
+
+        if self.settings.device_scale_factor and self.settings.device_scale_factor != 1.0:
+            args.extend(["--device-scale-factor", str(self.settings.device_scale_factor)])
+
+        if self.settings.storage_state_path and Path(self.settings.storage_state_path).exists():
+            args.extend(["--storage-state", str(Path(self.settings.storage_state_path).resolve())])
+
+        if self.settings.save_storage_state_path:
+            args.extend(["--save-storage-state", str(Path(self.settings.save_storage_state_path).resolve())])
+
         env = os.environ.copy()
 
         return StdioServerParameters(
