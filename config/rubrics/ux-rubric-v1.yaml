@@ -1,35 +1,35 @@
 schema_version: "1.0"
 rubric_id: "normanjr-ux"
-rubric_version: "1.0.0"
+rubric_version: "1.1.0"
 
 categories:
   - id: task_completion
-    label: "Task completion and flow"
-    weight: 0.25
+    label: "Task Flow"
+    weight: 0.22
   - id: accessibility_operability
-    label: "Accessibility and operability"
-    weight: 0.20
+    label: "Accessibility"
+    weight: 0.18
   - id: feedback_status
-    label: "Feedback and system status"
-    weight: 0.15
+    label: "Status & Feedback"
+    weight: 0.12
   - id: constraints_error_recovery
-    label: "Constraints, error prevention, and recovery"
-    weight: 0.15
+    label: "Error Recovery"
+    weight: 0.12
   - id: discoverability_affordance
-    label: "Discoverability, affordance, and signifiers"
+    label: "Affordance & Signs"
     weight: 0.10
   - id: mapping_conceptual_model
-    label: "Mapping and conceptual model"
+    label: "Mapping"
     weight: 0.05
   - id: cognitive_load
-    label: "Cognitive load and information architecture"
-    weight: 0.05
+    label: "Cognitive Load"
+    weight: 0.08
   - id: responsive_motor
-    label: "Responsive and motor ergonomics"
+    label: "Ergonomics"
     weight: 0.03
   - id: performance_stability
-    label: "Perceived performance and stability"
-    weight: 0.02
+    label: "Speed & Web Vitals"
+    weight: 0.10
 
 severity_penalties:
   critical: 15
@@ -187,6 +187,51 @@ criteria:
     title: "Cognitive load and choice complexity"
     authority: "Hick's Law"
     default_severity: minor
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: COGNITIVE-JOURNEY-COMPLEXITY
+    category_id: cognitive_load
+    title: "Journey Length & Cognitive Fatigue"
+    authority: "Hick's Law & Interaction Cost Theory"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: journey
+    scoring_eligible: true
+
+  - id: CWV-LCP-LOAD-TIME
+    category_id: performance_stability
+    title: "Largest Contentful Paint (< 2.5s)"
+    authority: "Google Core Web Vitals & SEO Speed Rules"
+    default_severity: major
+    allowed_severities: [minor, major, critical]
+    scope: state
+    scoring_eligible: true
+
+  - id: CWV-INP-RESPONSIVENESS
+    category_id: performance_stability
+    title: "Interaction to Next Paint (< 200ms)"
+    authority: "Google Core Web Vitals & Interaction Responsiveness"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: CWV-CLS-STABILITY
+    category_id: performance_stability
+    title: "Cumulative Layout Shift (< 0.1)"
+    authority: "Google Core Web Vitals & Visual Stability"
+    default_severity: major
+    allowed_severities: [minor, major]
+    scope: state
+    scoring_eligible: true
+
+  - id: SEO-PAGE-LOAD-THRESHOLD
+    category_id: performance_stability
+    title: "Page Load Time (3-Second Abandonment Threshold)"
+    authority: "Google Search Ranking & Industry Bounce Benchmarks"
+    default_severity: major
     allowed_severities: [minor, major]
     scope: state
     scoring_eligible: true

@@ -160,11 +160,13 @@ header.report-header {
 }
 
 .category-name {
-  width: 220px;
+  width: 145px;
+  min-width: 135px;
   color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
 }
 
 .category-bar-wrapper {

@@ -108,3 +108,114 @@ DOM_IMAGE_ALT_SCRIPT = """() => {
 
   return JSON.stringify(missing);
 }"""
+
+# Script to measure Google Core Web Vitals & SEO Page Speed metrics
+DOM_CORE_WEB_VITALS_SCRIPT = """() => {
+  const navEntries = window.performance?.getEntriesByType ? window.performance.getEntriesByType('navigation') : [];
+  const nav = navEntries.length > 0 ? navEntries[0] : null;
+  const timing = window.performance?.timing;
+
+  let pageLoadTimeSec = 0;
+  let ttfbSec = 0;
+  let domContentLoadedSec = 0;
+
+  if (nav) {
+    pageLoadTimeSec = nav.loadEventEnd > 0 ? (nav.loadEventEnd / 1000) : (nav.responseEnd / 1000);
+    ttfbSec = nav.responseStart > 0 ? (nav.responseStart / 1000) : 0;
+    domContentLoadedSec = nav.domContentLoadedEventEnd > 0 ? (nav.domContentLoadedEventEnd / 1000) : 0;
+  } else if (timing && timing.navigationStart) {
+    const navStart = timing.navigationStart;
+    if (timing.loadEventEnd > 0) {
+      pageLoadTimeSec = (timing.loadEventEnd - navStart) / 1000;
+    } else if (timing.responseEnd > 0) {
+      pageLoadTimeSec = (timing.responseEnd - navStart) / 1000;
+    }
+    if (timing.responseStart > 0) {
+      ttfbSec = (timing.responseStart - navStart) / 1000;
+    }
+    if (timing.domContentLoadedEventEnd > 0) {
+      domContentLoadedSec = (timing.domContentLoadedEventEnd - navStart) / 1000;
+    }
+  }
+
+  // Paint timings (FCP)
+  let fcpSec = 0;
+  const paintEntries = window.performance?.getEntriesByType ? window.performance.getEntriesByType('paint') : [];
+  const fcpEntry = paintEntries.find(p => p.name === 'first-contentful-paint');
+  if (fcpEntry) {
+    fcpSec = fcpEntry.startTime / 1000;
+  }
+
+  // LCP (Largest Contentful Paint)
+  let lcpSec = 0;
+  const lcpEntries = window.performance?.getEntriesByType ? window.performance.getEntriesByType('largest-contentful-paint') : [];
+  if (lcpEntries.length > 0) {
+    lcpSec = lcpEntries[lcpEntries.length - 1].startTime / 1000;
+  } else {
+    // If not recorded separately, estimate upper bound from FCP or DOMContentLoaded
+    lcpSec = fcpSec > 0 ? fcpSec : (domContentLoadedSec > 0 ? domContentLoadedSec : pageLoadTimeSec);
+  }
+
+  // CLS (Cumulative Layout Shift)
+  let clsValue = 0;
+  const layoutShiftEntries = window.performance?.getEntriesByType ? window.performance.getEntriesByType('layout-shift') : [];
+  layoutShiftEntries.forEach(entry => {
+    if (!entry.hadRecentInput) {
+      clsValue += entry.value || 0;
+    }
+  });
+
+  // INP / Interaction Latency
+  let maxInteractionLatencyMs = 0;
+  const eventEntries = window.performance?.getEntriesByType ? window.performance.getEntriesByType('event') : [];
+  eventEntries.forEach(e => {
+    if (e.duration && e.duration > maxInteractionLatencyMs) {
+      maxInteractionLatencyMs = e.duration;
+    }
+  });
+
+  // Multilingual / i18n tag
+  const htmlLang = document.documentElement.getAttribute('lang') || '';
+
+  return JSON.stringify({
+    pageLoadTimeSec: Math.round(pageLoadTimeSec * 100) / 100,
+    ttfbSec: Math.round(ttfbSec * 100) / 100,
+    fcpSec: Math.round(fcpSec * 100) / 100,
+    lcpSec: Math.round(lcpSec * 100) / 100,
+    clsValue: Math.round(clsValue * 1000) / 1000,
+    maxInteractionLatencyMs: Math.round(maxInteractionLatencyMs),
+    htmlLang: htmlLang,
+  });
+}"""
+
+# Script to audit multilingual i18n text expansion and untranslated placeholders
+DOM_MULTILINGUAL_SCRIPT = r"""() => {
+  const issues = [];
+  const textElements = Array.from(document.querySelectorAll('button, a, p, span, h1, h2, h3, h4, h5, h6, label'));
+
+  textElements.forEach(el => {
+    const text = (el.innerText || '').trim();
+    if (!text) return;
+
+    if (/\{\{\s*[\w\.]+\s*\}\}|TRANSLATION_MISSING|MISSING_I18N|__MSG_\w+__/.test(text)) {
+      issues.push({
+        type: 'untranslated_placeholder',
+        selector: el.id ? '#' + el.id : el.tagName.toLowerCase(),
+        text: text.slice(0, 60),
+      });
+    }
+
+    if (el.scrollWidth > el.clientWidth + 2 && el.clientWidth > 0) {
+      const style = window.getComputedStyle(el);
+      if (style.overflow === 'hidden' || style.textOverflow === 'ellipsis') {
+        issues.push({
+          type: 'text_overflow_clipped',
+          selector: el.id ? '#' + el.id : el.tagName.toLowerCase(),
+          text: text.slice(0, 60),
+        });
+      }
+    }
+  });
+
+  return JSON.stringify(issues.slice(0, 10));
+}"""
