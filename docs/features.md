@@ -68,7 +68,7 @@ Performance directly impacts user retention. NormanJr. extracts in-browser perfo
 Every completed run produces a full artifact bundle in `runs/<run-id>/`:
 
 - **Interactive HTML Report (`report.html`)**: Self-contained single-file report with embedded CSS, category score meters, expandable finding cards, and inline screenshot evidence.
-- **Executive PDF Report (`report.pdf`)**: Print-ready, professionally formatted PDF summary. See the [Sample PDF Report](../report.pdf) or [download raw](../report.pdf?raw=true).
+- **Executive PDF Report (`report.pdf`)**: Print-ready, professionally formatted PDF summary. See the [Sample PDF Report](assets/sample-report.pdf) or [download raw](assets/sample-report.pdf?raw=true).
 - **Canonical Machine-Readable Data (`result.json`)**: Complete typed JSON record for integration with CI/CD quality gates.
 - **Visual & Structural Evidence**: Full-resolution screenshots, accessibility trees, console log dumps, and event timelines.
 

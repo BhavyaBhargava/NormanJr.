@@ -12,7 +12,7 @@
   <a href="https://web.dev/explore/learn-core-web-vitals"><img src="https://img.shields.io/badge/Performance-Core%20Web%20Vitals-orange.svg" alt="Web Vitals" /></a>
   <a href="https://openrouter.ai/"><img src="https://img.shields.io/badge/AI%20Reasoning-OpenRouter-black.svg" alt="AI Reasoning" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License" /></a>
-  <a href="report.pdf"><img src="https://img.shields.io/badge/Sample%20Report-PDF-red.svg?logo=adobeacrobatreader&logoColor=white" alt="Sample Report" /></a>
+  <a href="docs/assets/sample-report.pdf"><img src="https://img.shields.io/badge/Sample%20Report-PDF-red.svg?logo=adobeacrobatreader&logoColor=white" alt="Sample Report" /></a>
 </p>
 
 ---
@@ -193,12 +193,12 @@ flowchart TD
 Want to see what an actual audit output looks like? Explore the real 2-page sample audit report generated directly by NormanJr., featuring executive UX Index scores, Core Web Vitals breakdowns, WCAG 2.2 touch target measurements, and prioritized remediation recommendations:
 
 <p align="center">
-  <a href="report.pdf">
+  <a href="docs/assets/sample-report.pdf">
     <img src="https://img.shields.io/badge/View_Sample_Report-PDF_Viewer-0284c7?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="View Sample Report in PDF Viewer" height="38" />
   </a>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="report.pdf?raw=true">
-    <img src="https://img.shields.io/badge/Download_Sample-report.pdf-059669?style=for-the-badge&logo=pdf&logoColor=white" alt="Download Sample report.pdf" height="38" />
+  <a href="docs/assets/sample-report.pdf?raw=true">
+    <img src="https://img.shields.io/badge/Download_Sample-sample--report.pdf-059669?style=for-the-badge&logo=pdf&logoColor=white" alt="Download Sample report.pdf" height="38" />
   </a>
 </p>
 
